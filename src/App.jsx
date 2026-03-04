@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
@@ -150,6 +150,59 @@ function App() {
   const trailX2 = useSpring(cursorX, { stiffness: 40, damping: 16 })
   const trailY2 = useSpring(cursorY, { stiffness: 40, damping: 16 })
   const bgShift = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
+  const autoScrollPauseUntil = useRef(0)
+
+  useEffect(() => {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    const sectionIds = ['top', 'about', 'experience', 'projects', 'figma', 'skills', 'journey', 'contact']
+    const pauseAutoScroll = () => {
+      autoScrollPauseUntil.current = Date.now() + 20000
+    }
+    const events = ['wheel', 'touchstart', 'keydown', 'mousedown']
+    events.forEach((event) => window.addEventListener(event, pauseAutoScroll, { passive: true }))
+
+    const getCurrentIndex = () => {
+      const firstSection = document.getElementById(sectionIds[0])
+      if (firstSection) {
+        const firstTop = firstSection.getBoundingClientRect().top
+        if (firstTop > window.innerHeight * 0.25) {
+          return -1
+        }
+      }
+
+      let bestIndex = 0
+      let bestDistance = Number.POSITIVE_INFINITY
+      sectionIds.forEach((id, index) => {
+        const el = document.getElementById(id)
+        if (!el) return
+        const rect = el.getBoundingClientRect()
+        const distance = Math.abs(rect.top)
+        if (distance < bestDistance) {
+          bestDistance = distance
+          bestIndex = index
+        }
+      })
+      return bestIndex
+    }
+
+    const interval = setInterval(() => {
+      if (Date.now() < autoScrollPauseUntil.current) return
+      const currentIndex = getCurrentIndex()
+      const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % sectionIds.length
+      const nextSection = document.getElementById(sectionIds[nextIndex])
+      if (nextSection) {
+        nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 8000)
+
+    return () => {
+      clearInterval(interval)
+      events.forEach((event) => window.removeEventListener(event, pauseAutoScroll))
+    }
+  }, [])
 
   const handleMouseMove = (event) => {
     const size = 220
@@ -218,7 +271,7 @@ function Hero({ scrollYProgress }) {
   return (
     <motion.section
       id="top"
-      className="relative flex min-h-screen items-center overflow-hidden px-7 py-24 sm:px-12"
+      className="relative flex min-h-screen items-center overflow-hidden px-7 py-24 sm:px-12 snap-section layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -239,7 +292,7 @@ function Hero({ scrollYProgress }) {
         />
       </div>
 
-      <div className="relative z-10 mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-12">
+      <div className="layered-content relative z-10 mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-12">
         <div className="space-y-6">
           <p className="text-xs uppercase tracking-[0.4em] text-white/60">
             Sanskriti Sonee · Hyderabad, India
@@ -311,7 +364,7 @@ function About() {
   return (
     <motion.section
       id="about"
-      className="relative px-7 py-24 sm:px-12"
+      className="relative px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -321,7 +374,7 @@ function About() {
         <FloatingBlob className="left-[14%] top-[20%] h-16 w-16 bg-blue/20 blur-2xl" delay={1} />
         <FloatingBlob className="right-[10%] bottom-[20%] h-20 w-20 bg-peach/20 blur-2xl" delay={2} />
       </div>
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="layered-content mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="glass-card relative grid min-h-[420px] place-items-center overflow-visible p-10">
           <div className="absolute -top-10 left-10 rounded-full bg-mint px-4 py-1 text-xs font-semibold text-[#0F0F12]">
             About Me
@@ -386,13 +439,13 @@ function ExperienceTimeline() {
   return (
     <motion.section
       id="experience"
-      className="px-7 py-24 sm:px-12"
+      className="px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
       variants={sectionVariants}
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="layered-content mx-auto max-w-5xl">
         <div className="mb-10 flex items-center justify-between">
           <h2 className="text-3xl font-display font-semibold">Experience Timeline</h2>
           <FaMapSigns className="text-lavender text-4xl" />
@@ -435,7 +488,7 @@ function Projects({ onOpen }) {
   return (
     <motion.section
       id="projects"
-      className="relative px-7 py-24 sm:px-12"
+      className="relative px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -446,7 +499,7 @@ function Projects({ onOpen }) {
         <FloatingBlob className="right-[14%] bottom-[20%] h-24 w-24 bg-coral/30 blur-2xl" delay={2} />
         <FloatingBlob className="left-[50%] bottom-[10%] h-12 w-12 bg-blue/30 blur-xl" delay={3} />
       </div>
-      <div className="mx-auto max-w-6xl">
+      <div className="layered-content mx-auto max-w-6xl">
         <div className="mb-10 flex items-center justify-between">
           <h2 className="text-3xl font-display font-semibold">Projects</h2>
           <FaLightbulb className="text-mint text-4xl" />
@@ -512,7 +565,7 @@ function FigmaCaseStudies({ onOpen }) {
   return (
     <motion.section
       id="figma"
-      className="relative px-7 py-24 sm:px-12"
+      className="relative px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -523,7 +576,7 @@ function FigmaCaseStudies({ onOpen }) {
         <FloatingBlob className="right-[10%] top-[10%] h-14 w-14 bg-mint/30 blur-xl" delay={2} />
         <FloatingBlob className="right-[18%] bottom-[18%] h-24 w-24 bg-coral/20 blur-2xl" delay={3} />
       </div>
-      <div className="mx-auto max-w-6xl">
+      <div className="layered-content mx-auto max-w-6xl">
         <div className="mb-10 flex items-center justify-between">
           <h2 className="text-3xl font-display font-semibold">Figma Prototypes</h2>
           <div className="flex items-center gap-2 text-lavender">
@@ -595,7 +648,7 @@ function Skills() {
   return (
     <motion.section
       id="skills"
-      className="relative px-7 py-24 sm:px-12"
+      className="relative px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -605,7 +658,7 @@ function Skills() {
         <FloatingBlob className="left-[6%] bottom-[18%] h-16 w-16 bg-lavender/20 blur-2xl" delay={1} />
         <FloatingBlob className="right-[12%] top-[15%] h-20 w-20 bg-mint/20 blur-2xl" delay={2} />
       </div>
-      <div className="mx-auto max-w-6xl space-y-10">
+      <div className="layered-content mx-auto max-w-6xl space-y-10">
         <h2 className="text-3xl font-display font-semibold">Skillset</h2>
         <div className="grid gap-6 lg:grid-cols-3">
           <SkillCard title="UI/UX Design " items={skills.design} icon={<FaFigma />} accent="lavender" />
@@ -621,13 +674,13 @@ function JourneyMap({ mapShift }) {
   return (
     <motion.section
       id="journey"
-      className="relative px-7 py-24 sm:px-12"
+      className="relative px-7 py-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
       variants={sectionVariants}
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="layered-content mx-auto max-w-6xl">
         <h2 className="mb-8 text-3xl font-display font-semibold">Design Journey Map</h2>
         <div className="glass-card relative overflow-hidden p-10">
           <div className="pointer-events-none absolute inset-0">
@@ -692,7 +745,7 @@ function Contact() {
   return (
     <motion.section
       id="contact"
-      className="relative px-7 pb-28 pt-24 sm:px-12"
+      className="relative px-7 pb-28 pt-24 sm:px-12 snap-section min-h-screen layered-section"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
@@ -702,39 +755,89 @@ function Contact() {
         <FloatingBlob className="left-[12%] top-[25%] h-16 w-16 bg-lavender/20 blur-2xl" delay={1} />
         <FloatingBlob className="right-[16%] bottom-[20%] h-20 w-20 bg-mint/20 blur-2xl" delay={2} />
       </div>
-      <div className="mx-auto max-w-5xl text-center">
-        <div className="glass-card p-10">
-          <h2 className="text-3xl font-display font-semibold">Let’s Build Something Smart</h2>
-          <p className="mt-3 text-white/70">Sanskriti Sonee · Hyderabad, India</p>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <motion.a
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.97 }}
-              className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow"
-              href="mailto:soneesanskriti@gmail.com"
-            >
-              Email
-            </motion.a>
-            <motion.a
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.97 }}
-              className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow"
-              href="https://www.linkedin.com/in/sanskriti-sonee"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </motion.a>
-            <motion.a
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.97 }}
-              className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow"
-              href="https://github.com/sanskritisonee"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub
-            </motion.a>
+      <div className="layered-content mx-auto max-w-6xl">
+        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0f16]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(255,180,162,0.15),transparent_40%),radial-gradient(circle_at_70%_70%,rgba(196,181,253,0.18),transparent_45%)]" />
+          <div className="relative grid gap-10 p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70">
+                Let’s Talk
+              </div>
+              <h2 className="text-3xl font-display font-semibold">Let’s build something unforgettable.</h2>
+              <p className="text-sm text-white/70">
+                Share your idea and I’ll respond with a clear plan, timeline, and next steps.
+              </p>
+              <form className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <input
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-lavender/60 focus:ring-2 focus:ring-lavender/20"
+                    placeholder="Your name"
+                    type="text"
+                  />
+                  <input
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-mint/60 focus:ring-2 focus:ring-mint/20"
+                    placeholder="Your email"
+                    type="email"
+                  />
+                </div>
+                <input
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-blue/60 focus:ring-2 focus:ring-blue/20"
+                  placeholder="Project type"
+                  type="text"
+                />
+                <textarea
+                  className="min-h-[120px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-coral/60 focus:ring-2 focus:ring-coral/20"
+                  placeholder="Tell me about your project..."
+                />
+                <div className="flex flex-wrap items-center gap-4">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow"
+                  >
+                    Send Message
+                  </motion.button>
+                  <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-white/60">
+                    <a href="mailto:soneesanskriti@gmail.com" className="hover:text-white">
+                      Email
+                    </a>
+                    <a href="https://www.linkedin.com/in/sanskriti-sonee" target="_blank" rel="noreferrer" className="hover:text-white">
+                      LinkedIn
+                    </a>
+                    <a href="https://github.com/sanskritisonee" target="_blank" rel="noreferrer" className="hover:text-white">
+                      GitHub
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <motion.div
+                className="absolute right-2 top-6 h-36 w-36 rounded-full bg-mint/30 blur-2xl"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <motion.div
+                className="absolute bottom-8 left-6 h-20 w-20 rounded-full bg-coral/30 blur-2xl"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <div className="relative h-64 w-52 overflow-hidden rounded-[36px] border border-white/15 bg-gradient-to-b from-white/10 to-white/5">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.2),transparent_50%)]" />
+                <motion.div
+                  className="absolute inset-x-8 bottom-10 h-40 rounded-[24px] bg-[#111423]"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                  className="absolute left-8 bottom-6 h-4 w-20 rounded-full bg-lavender/60"
+                  animate={{ scaleX: [0.4, 1, 0.6] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <div className="absolute left-1/2 top-8 h-10 w-10 -translate-x-1/2 rounded-full bg-peach/70" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1179,3 +1282,6 @@ function ProjectPreview({ type }) {
   )
 }
 export default App
+
+
+
