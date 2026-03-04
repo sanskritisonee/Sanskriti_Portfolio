@@ -687,52 +687,85 @@ function JourneyMap({ mapShift }) {
             <FloatingBlob className="left-[8%] top-[10%] h-16 w-16 bg-lavender/20 blur-2xl" delay={1} />
             <FloatingBlob className="right-[18%] bottom-[12%] h-20 w-20 bg-coral/20 blur-2xl" delay={2} />
           </div>
-          <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40">
-            <motion.path
-              d="M20 120 C 220 40, 420 220, 620 140 S 980 260, 1180 80"
-              fill="none"
-              stroke="url(#journeyGradient)"
-              strokeWidth="6"
-              strokeDasharray="12 12"
-              animate={{ strokeDashoffset: [0, -200] }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-            />
-            <defs>
-              <linearGradient id="journeyGradient" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stopColor="#C4B5FD" />
-                <stop offset="50%" stopColor="#9EF0D5" />
-                <stop offset="100%" stopColor="#FFB4A2" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <motion.div style={{ x: mapShift }} className="relative h-72">
-            <div className="absolute left-6 top-10 h-1 w-[120%] bg-gradient-to-r from-lavender via-mint to-coral" />
-            {journeyStops.map((stop, index) => (
-              <motion.div
-                key={stop}
-                className="group absolute top-6 flex flex-col items-center"
-                style={{ left: `${10 + index * 18}%` }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card text-lavender shadow-glow">
-                  {index % 2 === 0 ? <FaStar /> : <FaMapSigns />}
-                </div>
-                <p className="mt-3 text-xs text-white/70">{stop}</p>
-                <span className="pointer-events-none absolute -top-10 scale-95 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/70 opacity-0 transition group-hover:opacity-100 group-hover:scale-100">
-                  checkpoint
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
-              Scroll to explore each milestone as the path moves.
+          <div className="hidden md:block">
+            <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40">
+              <motion.path
+                d="M20 120 C 220 40, 420 220, 620 140 S 980 260, 1180 80"
+                fill="none"
+                stroke="url(#journeyGradient)"
+                strokeWidth="6"
+                strokeDasharray="12 12"
+                animate={{ strokeDashoffset: [0, -200] }}
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+              />
+              <defs>
+                <linearGradient id="journeyGradient" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#C4B5FD" />
+                  <stop offset="50%" stopColor="#9EF0D5" />
+                  <stop offset="100%" stopColor="#FFB4A2" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <motion.div style={{ x: mapShift }} className="relative h-72">
+              <div className="absolute left-6 top-10 h-1 w-[120%] bg-gradient-to-r from-lavender via-mint to-coral" />
+              {journeyStops.map((stop, index) => (
+                <motion.div
+                  key={stop}
+                  className="group absolute top-6 flex flex-col items-center"
+                  style={{ left: `${10 + index * 18}%` }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card text-lavender shadow-glow">
+                    {index % 2 === 0 ? <FaStar /> : <FaMapSigns />}
+                  </div>
+                  <p className="mt-3 text-xs text-white/70">{stop}</p>
+                  <span className="pointer-events-none absolute -top-10 scale-95 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/70 opacity-0 transition group-hover:opacity-100 group-hover:scale-100">
+                    checkpoint
+                  </span>
+                </motion.div>
+              ))}
+            </motion.div>
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+                Scroll to explore each milestone as the path moves.
+              </div>
+              <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+                Each checkpoint unlocks a story about design, AI, and growth.
+              </div>
             </div>
-            <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
-              Each checkpoint unlocks a story about design, AI, and growth.
+          </div>
+
+          <div className="md:hidden">
+            <Swiper
+              spaceBetween={14}
+              slidesPerView={1.1}
+              centeredSlides
+            >
+              {journeyStops.map((stop, index) => (
+                <SwiperSlide key={stop}>
+                  <motion.div
+                    className="flex h-full min-h-[140px] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card text-lavender shadow-glow">
+                      {index % 2 === 0 ? <FaStar /> : <FaMapSigns />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{stop}</p>
+                      <p className="text-xs text-white/60">Checkpoint</p>
+                    </div>
+                  </motion.div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            <div className="mt-4 rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+              Swipe through the journey and explore each milestone.
             </div>
           </div>
         </div>
