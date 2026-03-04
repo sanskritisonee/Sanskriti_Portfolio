@@ -742,6 +742,47 @@ function JourneyMap({ mapShift }) {
 }
 
 function Contact() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    project: '',
+    message: '',
+  })
+  const [submitStatus, setSubmitStatus] = useState('idle')
+
+  const handleChange = (event) => {
+    const { name, value } = event.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setSubmitStatus('loading')
+    try {
+      const payload = new FormData()
+      payload.append('name', formData.name)
+      payload.append('email', formData.email)
+      payload.append('_replyto', formData.email)
+      payload.append('project', formData.project)
+      payload.append('message', formData.message)
+      payload.append('_subject', `New portfolio inquiry from ${formData.name || 'Sanskriti'}`)
+
+      const response = await fetch('https://formspree.io/f/xpqjvyye', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: payload,
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.error || 'Form submission failed')
+      }
+      setSubmitStatus('success')
+      setFormData({ name: '', email: '', project: '', message: '' })
+    } catch (error) {
+      setSubmitStatus('error')
+    }
+  }
+
   return (
     <motion.section
       id="contact"
@@ -767,36 +808,52 @@ function Contact() {
               <p className="text-sm text-white/70">
                 Share your idea and I’ll respond with a clear plan, timeline, and next steps.
               </p>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <input
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-lavender/60 focus:ring-2 focus:ring-lavender/20"
                     placeholder="Your name"
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
                   />
                   <input
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-mint/60 focus:ring-2 focus:ring-mint/20"
                     placeholder="Your email"
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
                 <input
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-blue/60 focus:ring-2 focus:ring-blue/20"
                   placeholder="Project type"
                   type="text"
+                  name="project"
+                  value={formData.project}
+                  onChange={handleChange}
                 />
                 <textarea
                   className="min-h-[120px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-coral/60 focus:ring-2 focus:ring-coral/20"
                   placeholder="Tell me about your project..."
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
                 />
                 <div className="flex flex-wrap items-center gap-4">
                   <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow"
+                    type="submit"
+                    whileHover={{ scale: submitStatus === 'loading' ? 1 : 1.05, y: submitStatus === 'loading' ? 0 : -2 }}
+                    whileTap={{ scale: submitStatus === 'loading' ? 1 : 0.97 }}
+                    className="glow-button bg-gradient-to-r from-lavender to-blue text-base shadow-glow disabled:cursor-not-allowed disabled:opacity-70"
+                    disabled={submitStatus === 'loading'}
                   >
-                    Send Message
+                    {submitStatus === 'loading' ? 'Sending...' : 'Send Message'}
                   </motion.button>
                   <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-white/60">
                     <a href="mailto:soneesanskriti@gmail.com" className="hover:text-white">
@@ -810,6 +867,12 @@ function Contact() {
                     </a>
                   </div>
                 </div>
+                {submitStatus === 'success' && (
+                  <p className="text-sm text-mint">Thanks! Your message has been sent.</p>
+                )}
+                {submitStatus === 'error' && (
+                  <p className="text-sm text-coral">Something went wrong. Please try again.</p>
+                )}
               </form>
             </div>
             <div className="relative flex items-center justify-center">
