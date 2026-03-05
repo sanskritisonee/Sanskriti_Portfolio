@@ -11,6 +11,8 @@ import {
   FaMapSigns,
   FaLaptopCode,
   FaLightbulb,
+  FaMoon,
+  FaSun,
 } from 'react-icons/fa'
 import { SiReact, SiTensorflow } from 'react-icons/si'
 import portraitImage from './assets/potrait.jpg'
@@ -135,7 +137,16 @@ const sectionVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
 }
 
+const getInitialTheme = () => {
+  if (typeof window === 'undefined') return 'dark'
+  const stored = window.localStorage.getItem('theme')
+  if (stored === 'light' || stored === 'dark') return stored
+  const prefersDark =
+    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  return prefersDark ? 'dark' : 'light'
+}
 function App() {
+  const [theme, setTheme] = useState(getInitialTheme)
   const [activeCase, setActiveCase] = useState(null)
   const [activeProject, setActiveProject] = useState(null)
   const { scrollYProgress } = useScroll()
@@ -152,6 +163,12 @@ function App() {
   const bgShift = useTransform(scrollYProgress, [0, 1], ['0%', '100%'])
   const autoScrollPauseUntil = useRef(0)
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const root = document.documentElement
+    root.setAttribute('data-theme', theme)
+    window.localStorage.setItem('theme', theme)
+  }, [theme])
   useEffect(() => {
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return
@@ -211,7 +228,7 @@ function App() {
   }
 
   return (
-    <div className="bg-base text-[#F5F5F5]" onMouseMove={handleMouseMove} onMouseLeave={() => { cursorX.set(-200); cursorY.set(-200) }}>
+    <div className="bg-theme text-theme" onMouseMove={handleMouseMove} onMouseLeave={() => { cursorX.set(-200); cursorY.set(-200) }}>
       <motion.div
         className="fixed inset-0 z-0"
         style={{
@@ -231,6 +248,15 @@ function App() {
         style={{ scaleX }}
         className="fixed left-0 top-0 z-50 h-1 w-full origin-left bg-gradient-to-r from-lavender via-mint to-coral"
       />
+      <button
+        type="button"
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        className="fixed right-6 top-6 z-50 flex items-center gap-2 rounded-full border border-theme-10 bg-surface-10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-theme-subtle transition hover:-translate-y-0.5 hover:border-theme-20 hover:text-theme"
+        aria-label="Toggle color theme"
+      >
+        {theme === 'dark' ? <FaSun className="text-mint text-sm" /> : <FaMoon className="text-blue text-sm" />}
+        <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+      </button>
       <motion.div
         style={{ x: glowX, y: glowY }}
         className="pointer-events-none fixed left-0 top-0 z-40 h-56 w-56 rounded-full bg-gradient-to-r from-lavender/30 via-mint/20 to-coral/30 blur-3xl mix-blend-screen"
@@ -294,13 +320,13 @@ function Hero({ scrollYProgress }) {
 
       <div className="layered-content relative z-10 mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-12">
         <div className="space-y-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-white/60">
+          <p className="text-xs uppercase tracking-[0.4em] text-theme-subtle">
             Sanskriti Sonee · Hyderabad, India
           </p>
           <h1 className="text-4xl font-display font-semibold sm:text-5xl lg:text-6xl">
             Designing intelligent digital experiences that combine human-centered design with AI innovation.
           </h1>
-          <p className="text-lg text-white/70">
+          <p className="text-lg text-theme-muted">
             UI/UX Designer · Web Developer · AI/ML Enthusiast
           </p>
           <div className="flex flex-wrap gap-4">
@@ -315,7 +341,7 @@ function Hero({ scrollYProgress }) {
             <motion.a
               whileHover={{ scale: 1.05, y: -3 }}
               whileTap={{ scale: 0.97 }}
-              className="glow-button border border-white/20 text-white/90 hover:border-lavender/60"
+              className="glow-button border border-theme-20 text-theme hover:border-lavender/60"
               href="https://drive.google.com/file/d/1X2KFlGXe1aKb8fhccJtHpsgEakCIAlp1/view?usp=sharing"
               target="_blank"
               rel="noreferrer"
@@ -325,14 +351,14 @@ function Hero({ scrollYProgress }) {
             <motion.a
               whileHover={{ scale: 1.05, y: -3 }}
               whileTap={{ scale: 0.97 }}
-              className="glow-button border border-white/20 text-white/90 hover:border-mint/60"
+              className="glow-button border border-theme-20 text-theme hover:border-mint/60"
               href="#contact"
             >
               Contact
             </motion.a>
           </div>
           <motion.div
-            className="relative mt-6 h-28 w-60 overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+            className="relative mt-6 h-28 w-60 overflow-hidden rounded-2xl border border-theme-10 bg-surface"
             animate={{ y: [0, -6, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
           >
@@ -379,14 +405,14 @@ function About() {
           <div className="absolute -top-10 left-10 rounded-full bg-mint px-4 py-1 text-xs font-semibold text-[#0F0F12]">
             About Me
           </div>
-          <div className="relative h-80 w-64 overflow-hidden rounded-[40px] bg-[#0d0f1a]">
+          <div className="relative h-80 w-64 overflow-hidden rounded-[40px] bg-well">
             <img
               src={portraitImage}
               alt="Portrait of Sanskriti Sonee"
               className="h-full w-full object-cover"
             />
             <motion.div
-              className="absolute inset-0 rounded-[40px] border border-white/20"
+              className="absolute inset-0 rounded-[40px] border border-theme-20"
               animate={{ opacity: [0.4, 0.8, 0.4] }}
               transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -419,7 +445,7 @@ function About() {
 
         <div className="space-y-6">
           <h2 className="text-3xl font-display font-semibold">AI meets human-centered product design.</h2>
-          <p className="text-base text-white/70">
+          <p className="text-base text-theme-muted">
             I am an AI & Data Science undergraduate passionate about building intelligent products that
             combine design, data, and technology. I enjoy translating complex ideas into intuitive interfaces
             while developing scalable backend and AI-driven solutions.
@@ -451,7 +477,7 @@ function ExperienceTimeline() {
           <FaMapSigns className="text-lavender text-4xl" />
         </div>
 
-        <div className="relative space-y-8 border-l border-white/10 pl-8">
+        <div className="relative space-y-8 border-l border-theme-10 pl-8">
           {experiences.map((item, index) => (
             <motion.article
               key={item.title}
@@ -464,14 +490,14 @@ function ExperienceTimeline() {
               }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass-card relative min-h-[220px] p-6 border border-white/10"
+              className="glass-card relative min-h-[220px] p-6 border border-theme-10"
             >
               <ExperienceBadge type={item.type} />
               <span className="absolute -left-[52px] top-6 flex h-12 w-12 items-center justify-center rounded-full bg-lavender/90 text-[11px] font-semibold text-[#0F0F12] shadow-glow">
                 {item.year}
               </span>
               <h3 className="text-lg font-semibold">{item.title}</h3>
-              <ul className="mt-3 space-y-2 text-sm text-white/70">
+              <ul className="mt-3 space-y-2 text-sm text-theme-muted">
                 {item.highlights.map((text) => (
                   <li key={text}>• {text}</li>
                 ))}
@@ -519,8 +545,8 @@ function Projects({ onOpen }) {
                 whileHover={{ y: -10, boxShadow: '0 0 40px rgba(159, 216, 255, 0.25)' }}
                 transition={{ type: 'spring', stiffness: 200, damping: 12 }}
               >
-                <div className="relative h-40 rounded-2xl bg-[#0F0F18] overflow-hidden">
-                  <div className="absolute inset-0 rounded-2xl border border-white/10" />
+                <div className="relative h-40 rounded-2xl bg-well overflow-hidden">
+                  <div className="absolute inset-0 rounded-2xl border border-theme-10" />
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-lavender/60 via-mint/20 to-coral/40 opacity-0 transition group-hover:opacity-100" />
                   <ProjectPreview type={project.previewType} />
                   <motion.div
@@ -533,12 +559,12 @@ function Projects({ onOpen }) {
                   <h3 className="text-lg font-semibold">{project.name}</h3>
                   <ProjectContextBadge type={project.previewType} />
                 </div>
-                <p className="mt-2 min-h-[64px] text-sm text-white/70">{project.summary}</p>
+                <p className="mt-2 min-h-[64px] text-sm text-theme-muted">{project.summary}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {project.stack.map((item, index) => (
                     <motion.span
                       key={item}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+                      className="rounded-full border border-theme-10 bg-surface px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
                       animate={{ y: [0, -3, 0] }}
                       transition={{ duration: 4.5, repeat: Infinity, delay: index * 0.2, ease: 'easeInOut' }}
                     >
@@ -593,10 +619,10 @@ function FigmaCaseStudies({ onOpen }) {
               whileHover={{ y: -8, boxShadow: '0 0 40px rgba(196, 181, 253, 0.35)' }}
               transition={{ type: 'spring', stiffness: 200, damping: 14 }}
             >
-              <div className="relative h-44 overflow-hidden rounded-2xl bg-[#101019]">
-                <div className="absolute inset-0 border border-white/10" />
+              <div className="relative h-44 overflow-hidden rounded-2xl bg-well">
+                <div className="absolute inset-0 border border-theme-10" />
                 <div className="absolute inset-0 translate-y-3 bg-gradient-to-br from-lavender/40 via-blue/30 to-coral/40 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100" />
-                <div className="absolute left-4 top-4 text-xs uppercase tracking-[0.3em] text-white/60">
+                <div className="absolute left-4 top-4 text-xs uppercase tracking-[0.3em] text-theme-subtle">
                 </div>
                 <motion.div
                   className="absolute right-3 top-6 h-10 w-10 rounded-full bg-mint/40 blur-lg"
@@ -605,7 +631,7 @@ function FigmaCaseStudies({ onOpen }) {
                 />
                 <StudyPreview title={study.title} />
                 <motion.div
-                  className="absolute left-4 bottom-4 h-8 w-24 rounded-full bg-white/10"
+                  className="absolute left-4 bottom-4 h-8 w-24 rounded-full bg-surface-10"
                   animate={{ scaleX: [0.4, 1, 0.5] }}
                   transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
                 />
@@ -616,12 +642,12 @@ function FigmaCaseStudies({ onOpen }) {
                 />
               </div>
               <h3 className="mt-4 text-lg font-semibold">{study.title}</h3>
-              <p className="mt-3 min-h-[96px] text-sm text-white/70">{study.description}</p>
+              <p className="mt-3 min-h-[96px] text-sm text-theme-muted">{study.description}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {study.focus.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+                    className="rounded-full border border-theme-10 bg-surface px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
                   >
                     {item}
                   </span>
@@ -721,18 +747,18 @@ function JourneyMap({ mapShift }) {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card text-lavender shadow-glow">
                     {index % 2 === 0 ? <FaStar /> : <FaMapSigns />}
                   </div>
-                  <p className="mt-3 text-xs text-white/70">{stop}</p>
-                  <span className="pointer-events-none absolute -top-10 scale-95 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/70 opacity-0 transition group-hover:opacity-100 group-hover:scale-100">
+                  <p className="mt-3 text-xs text-theme-muted">{stop}</p>
+                  <span className="pointer-events-none absolute -top-10 scale-95 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-theme-muted opacity-0 transition group-hover:opacity-100 group-hover:scale-100">
                     checkpoint
                   </span>
                 </motion.div>
               ))}
             </motion.div>
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+              <div className="rounded-2xl bg-surface p-4 text-sm text-theme-muted">
                 Scroll to explore each milestone as the path moves.
               </div>
-              <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+              <div className="rounded-2xl bg-surface p-4 text-sm text-theme-muted">
                 Each checkpoint unlocks a story about design, AI, and growth.
               </div>
             </div>
@@ -747,7 +773,7 @@ function JourneyMap({ mapShift }) {
               {journeyStops.map((stop, index) => (
                 <SwiperSlide key={stop}>
                   <motion.div
-                    className="flex h-full min-h-[140px] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    className="flex h-full min-h-[140px] items-center gap-4 rounded-2xl border border-theme-10 bg-surface p-4"
                     initial={{ opacity: 0, y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -758,13 +784,13 @@ function JourneyMap({ mapShift }) {
                     </div>
                     <div>
                       <p className="text-sm font-semibold">{stop}</p>
-                      <p className="text-xs text-white/60">Checkpoint</p>
+                      <p className="text-xs text-theme-subtle">Checkpoint</p>
                     </div>
                   </motion.div>
                 </SwiperSlide>
               ))}
             </Swiper>
-            <div className="mt-4 rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+            <div className="mt-4 rounded-2xl bg-surface p-4 text-sm text-theme-muted">
               Swipe through the journey and explore each milestone.
             </div>
           </div>
@@ -830,21 +856,21 @@ function Contact() {
         <FloatingBlob className="right-[16%] bottom-[20%] h-20 w-20 bg-mint/20 blur-2xl" delay={2} />
       </div>
       <div className="layered-content mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0d0f16]">
+        <div className="relative overflow-hidden rounded-[28px] border border-theme-10 bg-well">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(255,180,162,0.15),transparent_40%),radial-gradient(circle_at_70%_70%,rgba(196,181,253,0.18),transparent_45%)]" />
           <div className="relative grid gap-10 p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/70">
+              <div className="inline-flex items-center gap-2 rounded-full bg-surface-10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-theme-muted">
                 Let’s Talk
               </div>
               <h2 className="text-3xl font-display font-semibold">Let’s build something unforgettable.</h2>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-theme-muted">
                 Share your idea and I’ll respond with a clear plan, timeline, and next steps.
               </p>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <input
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-lavender/60 focus:ring-2 focus:ring-lavender/20"
+                    className="w-full rounded-2xl border border-theme-10 bg-surface px-4 py-3 text-sm text-theme outline-none transition focus:border-lavender/60 focus:ring-2 focus:ring-lavender/20"
                     placeholder="Your name"
                     type="text"
                     name="name"
@@ -853,7 +879,7 @@ function Contact() {
                     required
                   />
                   <input
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-mint/60 focus:ring-2 focus:ring-mint/20"
+                    className="w-full rounded-2xl border border-theme-10 bg-surface px-4 py-3 text-sm text-theme outline-none transition focus:border-mint/60 focus:ring-2 focus:ring-mint/20"
                     placeholder="Your email"
                     type="email"
                     name="email"
@@ -863,7 +889,7 @@ function Contact() {
                   />
                 </div>
                 <input
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-blue/60 focus:ring-2 focus:ring-blue/20"
+                  className="w-full rounded-2xl border border-theme-10 bg-surface px-4 py-3 text-sm text-theme outline-none transition focus:border-blue/60 focus:ring-2 focus:ring-blue/20"
                   placeholder="Project type"
                   type="text"
                   name="project"
@@ -871,7 +897,7 @@ function Contact() {
                   onChange={handleChange}
                 />
                 <textarea
-                  className="min-h-[120px] w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-coral/60 focus:ring-2 focus:ring-coral/20"
+                  className="min-h-[120px] w-full rounded-2xl border border-theme-10 bg-surface px-4 py-3 text-sm text-theme outline-none transition focus:border-coral/60 focus:ring-2 focus:ring-coral/20"
                   placeholder="Tell me about your project..."
                   name="message"
                   value={formData.message}
@@ -888,14 +914,14 @@ function Contact() {
                   >
                     {submitStatus === 'loading' ? 'Sending...' : 'Send Message'}
                   </motion.button>
-                  <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-white/60">
-                    <a href="mailto:soneesanskriti@gmail.com" className="hover:text-white">
+                  <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.25em] text-theme-subtle">
+                    <a href="mailto:soneesanskriti@gmail.com" className="hover:text-theme">
                       Email
                     </a>
-                    <a href="https://www.linkedin.com/in/sanskriti-sonee" target="_blank" rel="noreferrer" className="hover:text-white">
+                    <a href="https://www.linkedin.com/in/sanskriti-sonee" target="_blank" rel="noreferrer" className="hover:text-theme">
                       LinkedIn
                     </a>
-                    <a href="https://github.com/sanskritisonee" target="_blank" rel="noreferrer" className="hover:text-white">
+                    <a href="https://github.com/sanskritisonee" target="_blank" rel="noreferrer" className="hover:text-theme">
                       GitHub
                     </a>
                   </div>
@@ -919,10 +945,10 @@ function Contact() {
                 animate={{ scale: [1, 1.3, 1] }}
                 transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
               />
-              <div className="relative h-64 w-52 overflow-hidden rounded-[36px] border border-white/15 bg-gradient-to-b from-white/10 to-white/5">
+              <div className="relative h-64 w-52 overflow-hidden rounded-[36px] border border-theme-15 bg-gradient-to-b from-[var(--app-surface-10)] to-[var(--app-surface-5)]">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.2),transparent_50%)]" />
                 <motion.div
-                  className="absolute inset-x-8 bottom-10 h-40 rounded-[24px] bg-[#111423]"
+                  className="absolute inset-x-8 bottom-10 h-40 rounded-[24px] bg-well"
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
                 />
@@ -978,7 +1004,7 @@ function SkillCard({ title, items, icon, accent }) {
       whileHover={{ y: -10, boxShadow: glowMap[accent] }}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/10 ${accentMap[accent]}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-full bg-surface-10 ${accentMap[accent]}`}>
           {icon}
         </div>
         <h3 className="text-lg font-semibold">{title}</h3>
@@ -989,7 +1015,7 @@ function SkillCard({ title, items, icon, accent }) {
             key={item}
             animate={{ y: [0, -4, 0] }}
             transition={{ duration: 6, repeat: Infinity, delay: index * 0.2, ease: 'easeInOut' }}
-            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/10 hover:text-white"
+            className="rounded-full border border-theme-10 bg-surface px-3 py-1 text-xs uppercase tracking-[0.2em] text-theme-muted transition hover:-translate-y-1 hover:border-theme-30 hover:bg-surface-10 hover:text-theme"
           >
             {item}
           </motion.span>
@@ -1032,14 +1058,14 @@ function ExperienceBadge({ type }) {
   return (
     <div className="absolute right-5 top-5 flex items-center gap-3">
       <motion.div
-        className={`flex h-10 w-10 items-center justify-center rounded-full bg-white/10 ${current.tone}`}
+        className={`flex h-10 w-10 items-center justify-center rounded-full bg-surface-10 ${current.tone}`}
         animate={{ boxShadow: ['0 0 0 rgba(255,255,255,0)', '0 0 18px rgba(196,181,253,0.45)', '0 0 0 rgba(255,255,255,0)'] }}
         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
       >
         {current.icon}
       </motion.div>
       <div className="hidden flex-col gap-1 sm:flex">
-        <span className="text-[10px] uppercase tracking-[0.3em] text-white/60">{current.label}</span>
+        <span className="text-[10px] uppercase tracking-[0.3em] text-theme-subtle">{current.label}</span>
         <motion.div
           className={`h-2 w-16 rounded-full ${current.bar}`}
           animate={{ scaleX: [0.3, 1, 0.5] }}
@@ -1093,7 +1119,7 @@ function StudyPreview({ title }) {
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1117,7 +1143,7 @@ function StudyPreview({ title }) {
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1141,7 +1167,7 @@ function StudyPreview({ title }) {
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-6 top-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-6 top-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1165,7 +1191,7 @@ function StudyPreview({ title }) {
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1188,7 +1214,7 @@ function StudyPreview({ title }) {
         transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+        className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
         animate={{ y: [0, -4, 0] }}
         transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -1212,30 +1238,30 @@ function CaseStudyModal({ study, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
       >
         <button
-          className="absolute right-6 top-6 rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70"
+          className="absolute right-6 top-6 rounded-full border border-theme-10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-theme-muted"
           onClick={onClose}
         >
           Close
         </button>
         <h3 className="text-2xl font-display font-semibold">{study.title}</h3>
-        <p className="mt-4 text-sm text-white/70">{study.description}</p>
+        <p className="mt-4 text-sm text-theme-muted">{study.description}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {study.focus.map((item) => (
             <span
               key={item}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+              className="rounded-full border border-theme-10 bg-surface px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
             >
               {item}
             </span>
           ))}
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60">Figma Preview</p>
+          <div className="rounded-2xl bg-surface p-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-theme-subtle">Figma Preview</p>
             <div className="mt-4 h-28 rounded-xl bg-gradient-to-br from-lavender/40 via-blue/30 to-coral/40" />
           </div>
-          <div className="rounded-2xl bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60">Prototype Flow</p>
+          <div className="rounded-2xl bg-surface p-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-theme-subtle">Prototype Flow</p>
             <div className="mt-4 h-28 rounded-xl bg-gradient-to-br from-mint/40 via-lavender/30 to-blue/40" />
           </div>
         </div>
@@ -1266,24 +1292,24 @@ function ProjectModal({ project, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
       >
         <button
-          className="absolute right-6 top-6 rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70"
+          className="absolute right-6 top-6 rounded-full border border-theme-10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-theme-muted"
           onClick={onClose}
         >
           Close
         </button>
         <h3 className="text-2xl font-display font-semibold">{project.name}</h3>
-        <p className="mt-4 text-sm text-white/70">{project.summary}</p>
+        <p className="mt-4 text-sm text-theme-muted">{project.summary}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {project.stack.map((item) => (
             <span
               key={item}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+              className="rounded-full border border-theme-10 bg-surface px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
             >
               {item}
             </span>
           ))}
         </div>
-        <div className="mt-6 rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+        <div className="mt-6 rounded-2xl bg-surface p-4 text-sm text-theme-muted">
           Outcome: {project.outcome}
         </div>
       </motion.div>
@@ -1311,7 +1337,7 @@ function ProjectPreview({ type }) {
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-4 bottom-10 flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-4 bottom-10 flex items-center gap-2 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1340,7 +1366,7 @@ function ProjectPreview({ type }) {
           transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+          className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         >
@@ -1368,7 +1394,7 @@ function ProjectPreview({ type }) {
         transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute left-6 bottom-6 rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/70"
+        className="absolute left-6 bottom-6 rounded-full bg-surface-10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-theme-muted"
         animate={{ opacity: [0.6, 1, 0.6] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -1378,6 +1404,8 @@ function ProjectPreview({ type }) {
   )
 }
 export default App
+
+
 
 
 
